@@ -1,0 +1,27 @@
+CC=cl
+CFLAGS=/await /std:c++latest /experimental:module
+OUT=GameBoyEmulator.exe
+
+all: $(OUT) test
+
+$(OUT): build/artifacts/Cpu.obj build/artifacts/GameBoyEmulator.obj
+	$(CC) $(CFLAGS) $** /Fe:build/$(OUT)
+
+build/artifacts/Cpu.obj: src/Cpu.ixx
+	$(CC) $(CFLAGS) /c $** /Fo:build/artifacts/Cpu.obj
+
+build/artifacts/GameBoyEmulator.obj: src/GameBoyEmulator.cpp
+	$(CC) $(CFLAGS) /c $** /Fo:build/artifacts/GameBoyEmulator.obj
+
+runtest: test
+	VSTest.Console build/GameBoyEmulatorTests.dll
+
+test: build/artifacts/GameBoyEmulatorTests.obj 
+	$(CC) $(CFLAGS) /LD $** /link /LIBPATH:test\Auxilary\lib /OUT:build/GameBoyEmulatorTests.dll
+
+build/artifacts/GameBoyEmulatorTests.obj: test/GameBoyEmulatorTests.cpp
+	$(CC) $(CFLAGS) /c $** /I test\Auxilary\include /Fo:build/artifacts/GameBoyEmulatorTests.obj
+
+clean:
+	del /F build\*
+	del /F build\artifacts\*
