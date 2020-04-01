@@ -16,36 +16,37 @@ namespace Cartridge
     class Cartridge
     {
     public:
+        Cartridge() = default;
         Cartridge(const std::string& filename) noexcept
         {
             std::unique_ptr<FILE, int(*)(FILE*)> spFile(fopen(filename.c_str(), "rb"), fclose);
             fread(bank0.data(), sizeof(uint8_t), 0x4000, spFile.get());
             fread(bank1.data(), sizeof(uint8_t), 0x4000, spFile.get());
         }
-        std::optional<uint8_t> readByte(size_t address)
+        std::optional<uint8_t> readByte(size_t addr)
         {
-            if (address > 0x7FFF) {
+            if (addr > 0x7FFF) {
                 return {};
             }
 
-            if (address > 0x3FFF) {
-                return bank1[address % 0x4000];
+            if (addr > 0x3FFF) {
+                return bank1[addr % 0x4000];
             }
 
-            return bank0[address];
+            return bank0[addr];
         }
         bool setByte(size_t addr, uint8_t byte)
         {
-            if (address > 0x7FFF) {
+            if (addr > 0x7FFF) {
                 return false;
             }
 
-            if (address > 0x3FFF) {
-                bank1[address % 0x4000] = byte;
+            if (addr > 0x3FFF) {
+                bank1[addr % 0x4000] = byte;
                 return true;
             }
 
-            bank0[address] = byte;
+            bank0[addr] = byte;
             return true;
         }
     private:

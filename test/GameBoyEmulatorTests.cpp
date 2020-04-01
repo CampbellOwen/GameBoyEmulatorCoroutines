@@ -101,8 +101,41 @@ namespace GameBoyEmulatorTests
 	public:
 		TEST_METHOD(MMUinit)
 		{
-			MMU::MMU mmu;
-			Assert::AreEqual(0, (int)mmu.m_vram[0]);
+			MMU::MMU mmu("..\\boot.gb");
+		
+		}
+
+		TEST_METHOD(DisableBootrom)
+		{
+			MMU::MMU mmu("..\\boot.gb");
+			Assert::IsTrue(mmu.m_readFromBootrom);
+			mmu.setByte(0xFF50, 1);
+			Assert::IsFalse(mmu.m_readFromBootrom);
+		}
+
+		TEST_METHOD(Bootrom)
+		{
+
+			std::string filename("..\\boot.gb");
+			MMU::MMU mmu(filename);
+			std::ifstream infile(filename, std::ios::binary | std::ios::in);
+			char temp {0};
+			uint8_t currByte {0};
+			size_t i {0};
+
+			wchar_t message[256];
+
+			for(int i = 0; i < 0x100; i++)
+			{
+				infile.get(temp);
+				currByte = static_cast<uint8_t>(temp);
+
+				auto cartByte = mmu.readByte(i);
+
+				swprintf(message, L"At byte [%x]", i);
+
+				Assert::AreEqual(currByte, *cartByte, message);
+			}
 		}
 	};
 
