@@ -1,5 +1,6 @@
 // GameBoyEmulator.cpp : This file contains the 'main' function. Program execution begins and ends there.
 
+#include <fstream>
 #include <iostream>
 #include <experimental/coroutine>
 #include <experimental/generator>
@@ -7,6 +8,9 @@
 
 //import std.core;
 import Cpu;
+import Registers;
+import MMU;
+import Cartridge;
 
 
 
@@ -19,82 +23,39 @@ std::experimental::generator<int> iota(int n) {
 
 int main(int argc, char* argv[])
 {
-    std::cout << "Hello World!\n";
-    auto gen = iota(10);
-    
-    for (auto i : gen) {
-       std::cout << i << "\n";
-    }
-    Cpu::Registers reg;
-    std::cout << "Registers:\n";
-    std::cout << reg.AF() << "\n";
-    reg.AF(255);
-    std::cout << std::hex << +reg.A << "\n";
-    std::cout << std::hex << +reg.F << "\n";
-    std::cout << std::hex << +reg.AF() << "\n";
+   std::cout << "Hello World!\n";
+   auto gen = iota(10);
+   
+   for (auto i : gen) {
+      std::cout << i << "\n";
+   }
 
-    std::cout << "Flags\n";
-    reg.F = 0;
-    std::cout << std::hex << +reg.F << "\n";
-    std::cout << std::hex << reg.Zero() << "\n";
+   std::string filename("Tetris.gb");
 
-    reg.Zero(true);
-    std::cout << std::hex << +reg.F << "\n";
-    std::cout << "Zero " << std::hex << reg.Zero() << "\n";
-    std::cout << "Sub " << std::hex << reg.Sub() << "\n";
-    std::cout << "HalfCarry " << std::hex << reg.HalfCarry() << "\n";
-    std::cout << "Carry " << std::hex << reg.Carry() << "\n";
+   std::ifstream infile(filename, std::ios::binary | std::ios::in);
+   char temp {0};
+   uint8_t currByte {0};
+   size_t i {0};
 
+   std::cout << "Is stream open? " << infile.is_open() << "\n";
+   while (infile)
+   {
+      infile.get(temp);
+      currByte = static_cast<uint8_t>(temp);
 
-    reg.Sub(true);
-    std::cout << std::hex << +reg.F << "\n";
-    std::cout << "Zero " << std::hex << reg.Zero() << "\n";
-    std::cout << "Sub " << std::hex << reg.Sub() << "\n";
-    std::cout << "HalfCarry " << std::hex << reg.HalfCarry() << "\n";
-    std::cout << "Carry " << std::hex << reg.Carry() << "\n";
+      std::cout << std::hex << +currByte << " ";
+      if (i % 0xF == 0 && i) {
+         std::cout << "\n";
+      }
 
-    reg.HalfCarry(true);
-    std::cout << std::hex << +reg.F << "\n";
-    std::cout << "Zero " << std::hex << reg.Zero() << "\n";
-    std::cout << "Sub " << std::hex << reg.Sub() << "\n";
-    std::cout << "HalfCarry " << std::hex << reg.HalfCarry() << "\n";
-    std::cout << "Carry " << std::hex << reg.Carry() << "\n";
+      i++;
+   }
 
-    reg.Carry(true);
-    std::cout << std::hex << +reg.F << "\n";
-    std::cout << "Zero " << std::hex << reg.Zero() << "\n";
-    std::cout << "Sub " << std::hex << reg.Sub() << "\n";
-    std::cout << "HalfCarry " << std::hex << reg.HalfCarry() << "\n";
-    std::cout << "Carry " << std::hex << reg.Carry() << "\n";
+   std::cout << "Checking Cartridge\n";
+   Cartridge::Cartridge cart(filename);
 
-    reg.Zero(false);
-    std::cout << std::hex << +reg.F << "\n";
-    std::cout << "Zero " << std::hex << reg.Zero() << "\n";
-    std::cout << "Sub " << std::hex << reg.Sub() << "\n";
-    std::cout << "HalfCarry " << std::hex << reg.HalfCarry() << "\n";
-    std::cout << "Carry " << std::hex << reg.Carry() << "\n";
-
-    reg.Sub(false);
-    std::cout << std::hex << +reg.F << "\n";
-    std::cout << "Zero " << std::hex << reg.Zero() << "\n";
-    std::cout << "Sub " << std::hex << reg.Sub() << "\n";
-    std::cout << "HalfCarry " << std::hex << reg.HalfCarry() << "\n";
-    std::cout << "Carry " << std::hex << reg.Carry() << "\n";
-
-    reg.HalfCarry(false);
-    std::cout << std::hex << +reg.F << "\n";
-    std::cout << "Zero " << std::hex << reg.Zero() << "\n";
-    std::cout << "Sub " << std::hex << reg.Sub() << "\n";
-    std::cout << "HalfCarry " << std::hex << reg.HalfCarry() << "\n";
-    std::cout << "Carry " << std::hex << reg.Carry() << "\n";
-
-    reg.Carry(false);
-    std::cout << std::hex << +reg.F << "\n";
-    std::cout << "Zero " << std::hex << reg.Zero() << "\n";
-    std::cout << "Sub " << std::hex << reg.Sub() << "\n";
-    std::cout << "HalfCarry " << std::hex << reg.HalfCarry() << "\n";
-    std::cout << "Carry " << std::hex << reg.Carry() << "\n";
-
+   std::cout << std::hex << +(*(cart.readByte(0))) << "\n";
+   
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

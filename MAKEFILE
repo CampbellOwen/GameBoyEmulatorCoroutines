@@ -1,27 +1,47 @@
 CC=cl
-CFLAGS=/await /std:c++latest /experimental:module
+CFLAGS=/await /std:c++latest /experimental:module /Z7
 OUT=GameBoyEmulator.exe
 
-all: $(OUT) test
+all: build test
 
-$(OUT): build/artifacts/Cpu.obj build/artifacts/GameBoyEmulator.obj
+build: $(OUT)
+
+$(OUT): build/artifacts/Cartridge.obj 
+$(OUT): build/artifacts/Cpu.obj 
+$(OUT): build/artifacts/MMU.obj
+$(OUT): build/artifacts/Registers.obj
+$(OUT): build/artifacts/GameBoyEmulator.obj
 	$(CC) $(CFLAGS) $** /Fe:build/$(OUT)
 
-build/artifacts/Cpu.obj: src/Cpu.ixx
-	$(CC) $(CFLAGS) /c $** /Fo:build/artifacts/Cpu.obj
+build/artifacts/Cartridge.obj: src/Cartridge.ixx
+	$(CC) $(CFLAGS) /c $** /Fo:$@
+
+build/artifacts/MMU.obj: src/MMU.ixx build/artifacts/Cartridge.obj
+	$(CC) $(CFLAGS) /c $** /Fo:$@
+
+build/artifacts/Registers.obj: src/Registers.ixx
+	$(CC) $(CFLAGS) /c $** /Fo:$@
+
+build/artifacts/Cpu.obj: src/Cpu.ixx build/artifacts/Registers.obj
+	$(CC) $(CFLAGS) /c $** /Fo:$@
 
 build/artifacts/GameBoyEmulator.obj: src/GameBoyEmulator.cpp
-	$(CC) $(CFLAGS) /c $** /Fo:build/artifacts/GameBoyEmulator.obj
+	$(CC) $(CFLAGS) /c $** /Fo:$@
 
 runtest: test
 	VSTest.Console build/GameBoyEmulatorTests.dll
 
-test: build/artifacts/GameBoyEmulatorTests.obj 
+test: build/artifacts/Cartridge.obj 
+test: build/artifacts/test/GameBoyEmulatorTests.obj 
+test: build/artifacts/Cpu.obj 
+test: build/artifacts/MMU.obj
+test: build/artifacts/Registers.obj
 	$(CC) $(CFLAGS) /LD $** /link /LIBPATH:test\Auxilary\lib /OUT:build/GameBoyEmulatorTests.dll
 
-build/artifacts/GameBoyEmulatorTests.obj: test/GameBoyEmulatorTests.cpp
-	$(CC) $(CFLAGS) /c $** /I test\Auxilary\include /Fo:build/artifacts/GameBoyEmulatorTests.obj
+build/artifacts/test/GameBoyEmulatorTests.obj: test/GameBoyEmulatorTests.cpp 
+	$(CC) $(CFLAGS) /c $** /I test\Auxilary\include /Fo:$@
 
 clean:
 	del /F build\*
 	del /F build\artifacts\*
+	del /F build\artifacts\test\*
