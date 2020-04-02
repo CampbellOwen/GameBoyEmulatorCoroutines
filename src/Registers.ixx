@@ -1,11 +1,14 @@
-export module Registers;
-
 #include <cstdint>
+#include <memory>
 
 #define Z_POS 7
 #define N_POS 6
 #define H_POS 5
 #define C_POS 4
+
+
+export module Registers;
+import MMU;
 
 namespace Cpu 
 {
@@ -74,6 +77,74 @@ struct Registers {
 		}
 		void Carry(bool bit) {
 			setBit(F, C_POS, bit);
+		}
+
+		void setPC(uint8_t high, uint8_t low)
+		{
+			PC = (high << 8) | low;
+		}
+
+		void setSP(uint8_t high, uint8_t low)
+		{
+			SP = (high << 8) | low;
+		}
+
+		uint8_t reg(const std::shared_ptr<MMU::MMU>& mmu, uint8_t index)
+		{
+			auto valRead = mmu->readByte(HL());
+			switch (index) {
+				case 0:
+					return B;
+				case 1:
+					return C;
+				case 2:
+					return D;
+				case 3:
+					return E;
+				case 4:
+					return H;
+				case 5:
+					return L;
+				case 6:
+					if (!valRead) {
+						return 0;
+					}
+					return *valRead;
+				case 7:
+					return A;
+			}
+
+			return 0;
+		}
+
+		void reg(const std::shared_ptr<MMU::MMU>& mmu, uint8_t index, uint8_t value)
+		{
+			switch (index) {
+				case 0:
+					B = value;
+				break;
+				case 1:
+					C = value;
+					break;
+				case 2:
+					D = value;
+					break;
+				case 3:
+					E = value;
+					break;
+				case 4:
+					H = value;
+					break;
+				case 5:
+					L = value;
+					break;
+				case 6:
+					mmu->setByte(HL(), value);
+					break;
+				case 7:
+					A = value;
+					break;
+			}
 		}
 
 	private:

@@ -8,21 +8,32 @@ build: $(OUT)
 
 $(OUT): build/artifacts/Cartridge.obj 
 $(OUT): build/artifacts/Cpu.obj 
+$(OUT): build/artifacts/Instructions.obj
 $(OUT): build/artifacts/MMU.obj
 $(OUT): build/artifacts/Registers.obj
 $(OUT): build/artifacts/GameBoyEmulator.obj
 	$(CC) $(CFLAGS) $** /Fe:build/$(OUT)
 
+build/artifacts/Instructions.obj: src/Instructions.ixx
+build/artifacts/Instructions.obj: build/artifacts/MMU.obj
+build/artifacts/Instructions.obj: build/artifacts/Registers.obj
+	$(CC) $(CFLAGS) /c $** /Fo:$@
+
 build/artifacts/Cartridge.obj: src/Cartridge.ixx
 	$(CC) $(CFLAGS) /c $** /Fo:$@
 
-build/artifacts/MMU.obj: src/MMU.ixx build/artifacts/Cartridge.obj
+build/artifacts/MMU.obj: src/MMU.ixx 
+build/artifacts/MMU.obj: build/artifacts/Cartridge.obj
 	$(CC) $(CFLAGS) /c $** /Fo:$@
 
 build/artifacts/Registers.obj: src/Registers.ixx
+build/artifacts/Registers.obj: build/artifacts/MMU.obj
 	$(CC) $(CFLAGS) /c $** /Fo:$@
 
-build/artifacts/Cpu.obj: src/Cpu.ixx build/artifacts/Registers.obj
+build/artifacts/Cpu.obj: src/Cpu.ixx 
+build/artifacts/Cpu.obj: build/artifacts/Registers.obj
+build/artifacts/Cpu.obj: build/artifacts/MMU.obj
+build/artifacts/Cpu.obj: build/artifacts/Instructions.obj
 	$(CC) $(CFLAGS) /c $** /Fo:$@
 
 build/artifacts/GameBoyEmulator.obj: src/GameBoyEmulator.cpp
@@ -34,6 +45,7 @@ runtest: test
 test: build/artifacts/Cartridge.obj 
 test: build/artifacts/test/GameBoyEmulatorTests.obj 
 test: build/artifacts/Cpu.obj 
+test: build/artifacts/Instructions.obj
 test: build/artifacts/MMU.obj
 test: build/artifacts/Registers.obj
 	$(CC) $(CFLAGS) /LD $** /link /LIBPATH:test\Auxilary\lib /OUT:build/GameBoyEmulatorTests.dll

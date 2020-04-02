@@ -4,6 +4,7 @@
 #include <iostream>
 #include <experimental/coroutine>
 #include <experimental/generator>
+#include <memory>
 
 
 //import std.core;
@@ -23,6 +24,8 @@ std::experimental::generator<int> iota(int n) {
 
 int main(int argc, char* argv[])
 {
+      //  std::cout.setstate(std::ios_base::failbit);
+
    std::cout << "Hello World!\n";
    auto gen = iota(10);
    
@@ -30,31 +33,16 @@ int main(int argc, char* argv[])
       std::cout << i << "\n";
    }
 
-   std::string filename("Tetris.gb");
-
-   std::ifstream infile(filename, std::ios::binary | std::ios::in);
-   char temp {0};
-   uint8_t currByte {0};
-   size_t i {0};
-
-   std::cout << "Is stream open? " << infile.is_open() << "\n";
-   while (infile)
-   {
-      infile.get(temp);
-      currByte = static_cast<uint8_t>(temp);
-
-      std::cout << std::hex << +currByte << " ";
-      if (i % 0xF == 0 && i) {
-         std::cout << "\n";
-      }
-
-      i++;
+   std::string cartFile("Tetris.gb");
+   std::string bootrom("boot.gb");
+   auto spMMU = std::make_shared<MMU::MMU>(bootrom);
+   auto spCart = std::make_shared<Cartridge::Cartridge>(cartFile);
+   spMMU->loadCartridge(spCart);
+   Cpu::Cpu cpu(spMMU);
+   while(true) {
+      cpu.step();
+      // cpu.dumpRegisters();
    }
-
-   std::cout << "Checking Cartridge\n";
-   Cartridge::Cartridge cart(filename);
-
-   std::cout << std::hex << +(*(cart.readByte(0))) << "\n";
    
 }
 

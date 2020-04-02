@@ -1,7 +1,7 @@
 #include "CppUnitTest.h"
 
 #include <stdio.h>
-
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -9,12 +9,13 @@
 import Registers;
 import MMU;
 import Cartridge;
+import Instructions;
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace GameBoyEmulatorTests
 {
-	TEST_CLASS(CpuTests)
+	TEST_CLASS(RegistersTests)
 	{
 	public:
 		
@@ -167,7 +168,24 @@ namespace GameBoyEmulatorTests
 
 				i++;
 			}
+		}
+	};
 
+	TEST_CLASS(InstructionsTests)
+	{
+		TEST_METHOD(OpcodesCorrect)
+		{
+			for(uint8_t i = 0; i < 0x100; i++) {
+				Assert::AreEqual(i, Cpu::instructions[i].opcode);
+			}	
+		}
+
+		TEST_METHOD(AllImplemented)
+		{
+			for(auto inst : Cpu::instructions)
+			{
+				Assert::IsTrue(strcmp("UNIMPLEMENTED", inst.name));
+			}
 		}
 	};
 }
