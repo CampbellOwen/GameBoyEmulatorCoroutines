@@ -303,18 +303,20 @@ export std::array<Instruction, 0x100> instructions = {
 			[](const std::shared_ptr<MMU::MMU>& mmu, Cpu::Registers& reg, uint16_t addr) -> std::experimental::generator<bool> {
                 auto readResult = mmu->readByte(addr+1);
                 int8_t value = static_cast<int8_t>(*readResult);
-                //std::cout << "Jump offset: " << static_cast<int16_t>(value) << "\n";
+                std::cout << "Jump offset: " << static_cast<int16_t>(value) << "\n";
                 co_yield true;
                 co_yield true;
                 co_yield true;
                 co_yield true;
                 if (reg.Zero()) {
+                    std::cout << "Zero, not jumping\n";
                     co_yield true;
                     co_yield true;
                     co_yield true;
                     co_yield false;
                 }
                 else {
+                    std::cout << "Not Zero, PC=" << std::hex << +reg.PC << "\n";
                     reg.PC += value;
 
                     co_yield true;
@@ -489,9 +491,10 @@ export std::array<Instruction, 0x100> instructions = {
         },
         Instruction{0x32, "LD (HL-) A", 0, 
 			[](const std::shared_ptr<MMU::MMU>& mmu, Cpu::Registers& reg, uint16_t addr) -> std::experimental::generator<bool> {
+                
+                std::cout << "Setting memory location " << std::hex << reg.HL() << " to " << std::hex << +reg.A << "\n";
+                std::cout << "Setting HL to " << std::hex << reg.HL()-1 << "\n";
                 mmu->setByte(reg.HL(), reg.A);
-                //std::cout << "Setting memory location " << std::hex << reg.HL() << " to " << std::hex << +reg.A << "\n";
-                // std::cout << "Setting HL to " << std::hex << reg.HL()-1 << "\n";
                 reg.HL(reg.HL()-1);
                 co_yield true;
                 co_yield true;
@@ -1675,11 +1678,6 @@ export std::array<Instruction, 0x100> instructions = {
                     }
                     break;
                 }
-                
-                co_yield true;
-                co_yield true;
-                co_yield true;
-                co_yield false;
             }
         },
         Instruction{0xCC, "UNIMPLEMENTED", 0, 

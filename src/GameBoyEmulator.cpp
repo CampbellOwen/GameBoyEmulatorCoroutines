@@ -13,8 +13,6 @@ import Registers;
 import MMU;
 import Cartridge;
 
-
-
 std::experimental::generator<int> iota(int n) {
    for (int i = 1; i < n+1; i++) {
       co_yield i;
@@ -36,8 +34,7 @@ int main(int argc, char* argv[])
    std::string cartFile("Tetris.gb");
    std::string bootrom("boot.gb");
    auto spMMU = std::make_shared<MMU::MMU>(bootrom);
-   auto spCart = std::make_shared<Cartridge::Cartridge>(cartFile);
-   spMMU->loadCartridge(spCart);
+   spMMU->loadCartridge(cartFile);
    Cpu::Cpu cpu(spMMU);
    while(true) {
       cpu.step();

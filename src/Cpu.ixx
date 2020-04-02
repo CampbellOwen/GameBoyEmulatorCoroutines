@@ -43,7 +43,7 @@ namespace Cpu
 				}
 				else {
 					// std::cout << "Starting new instruction\n";
-					dumpRegisters();
+					// dumpRegisters();
 
 					uint16_t addr = m_reg.PC;
 					std::cout << "[" << std::hex << std::setfill('0') << std::setw(4) << addr << "] ";

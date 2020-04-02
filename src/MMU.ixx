@@ -19,9 +19,9 @@ namespace MMU
                 fread(m_bootrom.data(), sizeof(uint8_t), 0x100, spFile.get());
             }
 
-            bool loadCartridge(std::shared_ptr<Cartridge::Cartridge> spCartridge)
+            bool loadCartridge(std::string filename)
             {
-                m_spCartridge = spCartridge;
+                m_cartridge = Cartridge::Cartridge(filename);
                 return true;
             }
 
@@ -34,7 +34,7 @@ namespace MMU
                 }
                 if (addr < 0x8000)
                 {
-                    m_spCartridge->setByte(addr, byte);
+                    m_cartridge.setByte(addr, byte);
                     return true;
                 }
 
@@ -53,7 +53,7 @@ namespace MMU
                     return m_bootrom[addr];
                 }
                 if (addr < 0x8000) {
-                    return m_spCartridge->readByte(addr);
+                    return m_cartridge.readByte(addr);
                 }
                 if (addr < 0xC000) {
                     return m_vram[addr % 0x2000];
@@ -63,8 +63,8 @@ namespace MMU
             }
 
             bool m_readFromBootrom;
-            std::array<uint8_t, 0x200> m_vram;
-            std::shared_ptr<Cartridge::Cartridge> m_spCartridge;
+            std::array<uint8_t, 0x2000> m_vram;
+            Cartridge::Cartridge m_cartridge;
             std::array<uint8_t, 0x100> m_bootrom;
             
 
