@@ -79,10 +79,25 @@ export std::array<Instruction, 0x100> instructions = {
                co_yield false;
             }
         },
-        Instruction{0x06, "UNIMPLEMENTED", 0, 
+        Instruction{0x06, "LD B,u8", 1, 
 			[](const std::shared_ptr<MMU::MMU>& mmu, Cpu::Registers& reg, uint16_t addr) -> std::experimental::generator<bool> {
-                exit(1);
-               co_yield false;
+                auto byteRead = mmu->readByte(addr+1);
+                if (!byteRead) {
+                    std::cout << "Error reading memory at " << std::hex << +addr+1 << "\n";
+                }
+                uint8_t byte = *byteRead;
+                
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield true;
+
+                std::cout << "Setting B to " << std::hex << +byte << "\n";
+                reg.B = byte;
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield false;
             }
         },
         Instruction{0x07, "UNIMPLEMENTED", 0, 
@@ -231,10 +246,22 @@ export std::array<Instruction, 0x100> instructions = {
                co_yield false;
             }
         },
-        Instruction{0x17, "UNIMPLEMENTED", 0, 
+        Instruction{0x17, "RLA", 0, 
 			[](const std::shared_ptr<MMU::MMU>& mmu, Cpu::Registers& reg, uint16_t addr) -> std::experimental::generator<bool> {
-                exit(1);
-               co_yield false;
+                bool carry = reg.Carry();
+                reg.Zero(false);
+                reg.Sub(false);
+                reg.HalfCarry(false);
+                reg.Carry(reg.A & 0x80);
+                std::cout << "Setting flags to " << std::hex << +reg.F << "\n";
+                std::cout << "Setting A ( " << std::hex << +reg.A << ") to ";
+                reg.A = (reg.A << 1) | (carry ? 1 : 0);
+                std::cout << std::hex << +reg.A << "\n";
+
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield false;
             }
         },
         Instruction{0x18, "UNIMPLEMENTED", 0, 
@@ -692,10 +719,15 @@ export std::array<Instruction, 0x100> instructions = {
                co_yield false;
             }
         },
-        Instruction{0x4F, "UNIMPLEMENTED", 0, 
+        Instruction{0x4F, "LD C,A", 0, 
 			[](const std::shared_ptr<MMU::MMU>& mmu, Cpu::Registers& reg, uint16_t addr) -> std::experimental::generator<bool> {
-                exit(1);
-               co_yield false;
+                // C <- A
+                std::cout << "Set C to A (" << std::hex << +reg.A << ")\n";
+                reg.C = reg.A;
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield false;
             }
         },
         Instruction{0x50, "UNIMPLEMENTED", 0, 
@@ -1415,10 +1447,33 @@ export std::array<Instruction, 0x100> instructions = {
                co_yield false;
             }
         },
-        Instruction{0xC5, "UNIMPLEMENTED", 0, 
+        Instruction{0xC5, "PUSH BC", 0, 
 			[](const std::shared_ptr<MMU::MMU>& mmu, Cpu::Registers& reg, uint16_t addr) -> std::experimental::generator<bool> {
-                exit(1);
-               co_yield false;
+                reg.SP = reg.SP - 2;
+                std::cout << "Setting SP to " << std::hex << reg.SP << "\n";
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                
+                std::cout << "Setting SP+1 (" << std::hex << reg.SP+1 << ") to B (" << +reg.B << ")\n";
+                mmu->setByte(reg.SP+1, reg.B);
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield true;
+
+                std::cout << "Setting SP (" << std::hex << reg.SP << ") to C (" << +reg.C << ")\n";
+                mmu->setByte(reg.SP, reg.C);
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield true;
+
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield false;
             }
         },
         Instruction{0xC6, "UNIMPLEMENTED", 0, 
@@ -1686,10 +1741,54 @@ export std::array<Instruction, 0x100> instructions = {
                co_yield false;
             }
         },
-        Instruction{0xCD, "UNIMPLEMENTED", 0, 
+        Instruction{0xCD, "CALL nn", 2, 
 			[](const std::shared_ptr<MMU::MMU>& mmu, Cpu::Registers& reg, uint16_t addr) -> std::experimental::generator<bool> {
-                exit(1);
-               co_yield false;
+                auto lowRead = mmu->readByte(addr+1);
+                if (!lowRead) {
+                    std::cout << "Error reading memory at " << std::hex << +addr+1 << "\n";
+                }
+                uint8_t low = *lowRead;
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield true;
+
+                auto highRead = mmu->readByte(addr+2);
+                if (!highRead) {
+                    std::cout << "Error reading memory at " << std::hex << +addr+1 << "\n";
+                }
+                uint8_t high = *highRead;
+                std::cout << "Calling subroutine at " << std::hex << +high << +low << "\n";
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield true;
+
+                reg.SP = reg.SP - 2;
+                std::cout << "Setting SP to " << std::hex << reg.SP << "\n";
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield true;
+
+                uint8_t lowPC = reg.PC & 0xFF;
+                uint8_t highPC = (reg.PC >> 8) & 0xFF;
+                mmu->setByte(reg.SP + 1, highPC);
+                std::cout << "Writing " << std::hex << +highPC << " to " << +(reg.SP+1) << "\n";
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield true;
+
+                mmu->setByte(reg.SP, lowPC);
+                std::cout << "Writing " << std::hex << +lowPC << " to " << +reg.SP << "\n";
+                reg.setPC(high, low);
+                std::cout << "Setting PC to " << std::hex << +high << +low << "\n";
+                co_yield true;
+                co_yield true;
+                co_yield true;
+                co_yield false;
+
             }
         },
         Instruction{0xCE, "UNIMPLEMENTED", 0, 
