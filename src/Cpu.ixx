@@ -33,16 +33,8 @@ namespace Cpu
 
 			bool step()
 			{
-				// std::cout << "CPU tick\n";
-				// std::cout << "PC: " << std::hex << + m_reg.PC << "\n";
-				if (m_state.executing)
+				if (!m_state.executing)
 				{
-					// std::cout << "Resuming last instruction\n";
-				}
-				else {
-					// std::cout << "Starting new instruction\n";
-					// dumpRegisters();
-
 					uint16_t addr = m_reg.PC;
 					
 					if (m_state.log) {
@@ -65,7 +57,6 @@ namespace Cpu
 						std::cout << currInst.name << "\n";
 					}
 
-					// std::cout << "Executing instruction cycle\n";
 					m_state.currCommand = currInst.command(m_mmu, m_reg, addr);
 					m_state.currInstruction = currInst;
 

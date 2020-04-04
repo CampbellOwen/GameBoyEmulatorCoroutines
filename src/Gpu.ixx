@@ -46,7 +46,6 @@ namespace Gpu
             }
 
             if (m_state.enabled) {
-                // std::cout << "GPU Enabled\n";
                 return *(m_state.task.begin());
             }
             return false;
@@ -152,35 +151,17 @@ namespace Gpu
                         co_yield true;
                     }
 
-                    setMode(0);
-
-                    // SDL_SetRenderDrawColor(m_renderer, colours[y % 4],colours[y % 4],colours[y % 4], 255);
-                    // for (int x = 0; x < 160; x++) {
-                    //     SDL_RenderDrawPoint(m_renderer, x, y);
-                    // }
-
-                    // for(int i = 0; i < 144; i++) {
-                    //     SDL_SetRenderDrawColor(m_renderer, colours[i == y ? 4 : 0], colours[i == y ? 4 : 0], colours[i == y ? 4 : 0], 255);
-                    //     for (int j = 0; j < 160; j++) {
-                    //         SDL_RenderDrawPoint(m_renderer,j, i);
-                    //     }
-                    // }
-                                    // SDL_RenderPresent(m_renderer);
-
-                    
-                    renderScanLine(y);
-                    // SDL_RenderPresent(m_renderer);
-
                     // Mode 0, HBLANK
-                    // std::cout << "HBLANK\n";
+                    setMode(0);
+                    renderScanLine(y);
+                    
                     for (int i = 0; i < 204; i++) {
                         co_yield true;
                     }
                 }
-                setMode(1);
+
                 // VBLANK
-                // std::cout << "VBLANK!!!!\n";
-                
+                setMode(1);             
                 SDL_RenderPresent(m_renderer);
                 for (uint8_t y = 144; y < 154; y++)
                 {

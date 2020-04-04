@@ -18,9 +18,7 @@ import Gpu;
 
 int main(int argc, char* argv[])
 {
-      //  std::cout.setstate(std::ios_base::failbit);
-          SDL_SetMainReady();
-
+   SDL_SetMainReady();
    if(SDL_Init(SDL_INIT_VIDEO) != 0) {
       std::cout << "SDL_Init Error: " << SDL_GetError() << "\n";
       return 1;
@@ -36,16 +34,6 @@ int main(int argc, char* argv[])
    }
 
    SDL_RenderSetLogicalSize(renderer, 160, 144);
-
-   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    for (int i = 0; i < 144; i++) {
-      for (int j = 0; j < 160; j++) {
-         SDL_RenderDrawPoint(renderer, j,i);
-      }
-    }
-    SDL_RenderPresent(renderer);
    
    std::string cartFile("Tetris.gb");
    std::string bootrom("boot.gb");
@@ -56,18 +44,6 @@ int main(int argc, char* argv[])
    while(true) {
       gpu.step();
       cpu.step();
-      // cpu.dumpRegisters();
    }
    
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
