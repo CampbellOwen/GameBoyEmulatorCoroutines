@@ -17,15 +17,13 @@ import Instructions;
 
 namespace Cpu
 {
-
-
-
 	struct State
 	{
 		State() : currCommand({}), currInstruction(instructions[0]), executing(false) {};
 		std::optional<std::experimental::generator<bool> > currCommand;
 		Instruction& currInstruction;
 		bool executing { false };
+		bool log { false };
 	};
 
 	class Cpu
@@ -46,7 +44,10 @@ namespace Cpu
 					// dumpRegisters();
 
 					uint16_t addr = m_reg.PC;
-					std::cout << "[" << std::hex << std::setfill('0') << std::setw(4) << addr << "] ";
+					
+					if (m_state.log) {
+						std::cout << "[" << std::hex << std::setfill('0') << std::setw(4) << addr << "] ";
+					}
 					auto opcodeResult = m_mmu->readByte(addr);
 					uint8_t opcode;
 					if (opcodeResult) {
@@ -56,9 +57,13 @@ namespace Cpu
 						std::cout << "Invalid opcode\n";
 						return false;
 					}
-					std::cout << "[" << std::hex << std::setfill('0') << std::setw(2) << +opcode << "] - ";
+					if (m_state.log) {
+						std::cout << "[" << std::hex << std::setfill('0') << std::setw(2) << +opcode << "] - ";
+					}
 					Instruction& currInst = instructions[opcode];
-					std::cout << currInst.name << "\n";
+					if (m_state.log) {
+						std::cout << currInst.name << "\n";
+					}
 
 					// std::cout << "Executing instruction cycle\n";
 					m_state.currCommand = currInst.command(m_mmu, m_reg, addr);
@@ -74,7 +79,7 @@ namespace Cpu
 				return true;
 			}
 
-			Cpu(std::shared_ptr<MMU::MMU> mmu): m_mmu(std::move(mmu))
+			Cpu(std::shared_ptr<MMU::MMU> mmu): m_mmu(mmu)
 			{
 			}
 
@@ -93,7 +98,7 @@ namespace Cpu
 			}
 		private:
 			
-
+			
 			State m_state;
 			Cpu::Registers m_reg;
 			std::shared_ptr<MMU::MMU> m_mmu;
