@@ -41,7 +41,19 @@ int main(int argc, char* argv[])
    spMMU->loadCartridge(cartFile);
    Cpu::Cpu cpu(spMMU);
    Gpu::Gpu gpu(spMMU, renderer);
-   while(true) {
+
+   SDL_Event event;
+
+   bool run { true };
+   while(run) {
+      while(SDL_PollEvent(&event)) {
+         switch(event.type) {
+            case SDL_QUIT:
+            {
+               run = false;
+            }
+         }
+      }
       gpu.step();
       cpu.step();
    }
